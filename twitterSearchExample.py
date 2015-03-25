@@ -21,7 +21,7 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
         elif e.e.code == 404:
             print >> sys.stderr, 'Encountered 404 Error (not found)'
             return None
-        elif e.e.code == 429 or e.e.code == 88:
+        elif e.e.code == 429:
             print >> sys.stderr, 'Encountered 429 Error (rate limit exceeded)'
             if sleep_when_rate_limited:
                 print >> sys.stderr, 'Retrying in 15 minutes...ZzZzZzZz...'
@@ -69,7 +69,7 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 def save_to_mongo(data, mongo_db, mongo_db_collection):
     # Connects to the MongoDB server running on
     # localhost: 27017 by default
-    client = pymongo.MongoClient()
+
     # Get a reference to a particular database
 
     db = client[mongo_db]
@@ -84,11 +84,10 @@ def save_to_mongo(data, mongo_db, mongo_db_collection):
 
 
 def oauth_login():
-    CONSUMER_KEY = 'igqW4Q8nN1uCTatbSlGspddjz'
-    CONSUMER_SECRET = 'BMbCbBS5rkJl2Hk7Yf37Q5DJVvAV5GybTC2txUqrqAmJKt9pT9'
-    OAUTH_TOKEN = '477055521-8m4V7Ky4wGaMEKBeCPeeJy2Mf6iADrmIvCfoS5v2'
-    OAUTH_TOKEN_SECRET = 'Mj5QpSObqw35A2W3IFGS4qct6ZA7plLelCG0OpyI17ZVa'
-
+    OAUTH_TOKEN = ''
+    OAUTH_TOKEN_SECRET = ''
+    CONSUMER_KEY = ''
+    CONSUMER_SECRET = ''
 
     # Define Auth
     auth = twitter.oauth.OAuth(OAUTH_TOKEN, OAUTH_TOKEN_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
@@ -134,17 +133,17 @@ def twitter_search(twitter_api, q, max_results=200, **kw):
 
 # Open mongoDB connection:
 
-
+client = pymongo.MongoClient()
 
 # Set up Oauth login
 twitter_api = oauth_login()
 
 # Create query
 q = 'chikungunya'
-qtest = 'israel'
+# qtest = 'israel'
 
 # Create response
-responses = twitter_search(twitter_api, qtest, max_results=100000)
+responses = twitter_search(twitter_api, q, max_results=100000)
 
 for response in responses:
     default = 'Null'
@@ -194,9 +193,9 @@ for response in responses:
         tweet['geo'] = response.get('geo', default)
         tweet['place'] = response.get('place', default)
         # print json.dumps(tweet, indent=1)
-        save_to_mongo(tweet, 'israelDatabase', 'geolocated')
+        save_to_mongo(tweet, 'chikungunyaDatabase', 'geolocated')
         # print "bob"
     else:
         # print json.dumps(tweet, indent=1)
-        save_to_mongo(tweet, 'israelDatabase', 'tweets')
+        save_to_mongo(tweet, 'chikungunyaDatabase', 'tweets')
         # print "bob"
