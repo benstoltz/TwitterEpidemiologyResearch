@@ -35,24 +35,25 @@ def load_from_mongo(mongo_db, mongo_db_coll, return_cursor=False, criteria=None,
     print tweet_iterator
     with open('outputs/geoWorld.csv', 'wb') as geoworldFile:
         my_file_writer = csv.writer(geoworldFile)
-        my_file_writer.writerow(['date', '\tuser', '\tlocation', '\ttlatitude', '\ttlongitude', '\tulatitude', '\tulongitude', '\tdifference'])
+        my_file_writer.writerow(['latitude', '\tlongitude', '\tdate_created', '\tuser', '\ttext'])
         for tweet in tweet_iterator:
             date_created = tweet['date_tweeted']
             user = tweet['user']['name'].encode('ascii', 'ignore').decode('ascii')
-            userlocation = tweet['user']['location'].encode('ascii', 'ignore').decode('ascii')
+            text = tweet['text'].encode('ascii', 'ignore').decode('ascii')
+            # userlocation = tweet['user']['location'].encode('ascii', 'ignore').decode('ascii')
             tweetLatitude = tweet['coordinates']['coordinates'][1]
             tweetLongitude = tweet['coordinates']['coordinates'][0]
-            g = geocoder.google(userlocation)
-            if len(g.latlng) != 0:
-                userLatitude = g.latlng['lat']
-                userLongitude = g.latlng['lng']
-                differenceOfLocation = euclidean_distance(userLatitude, tweetLatitude, userLongitude, tweetLongitude)
-            else:
-                userLatitude = 0
-                userLongitude = 0
-                differenceOfLocation = euclidean_distance(userLatitude, tweetLatitude, userLongitude, tweetLongitude)
+            # g = geocoder.google(userlocation)
+            # if len(g.latlng) != 0:
+            #     userLatitude = g.latlng['lat']
+            #     userLongitude = g.latlng['lng']
+            #     differenceOfLocation = euclidean_distance(userLatitude, tweetLatitude, userLongitude, tweetLongitude)
+            # else:
+            #     userLatitude = 0
+            #     userLongitude = 0
+            #     differenceOfLocation = euclidean_distance(userLatitude, tweetLatitude, userLongitude, tweetLongitude)
 
-            my_file_writer.writerow([date_created, userlocation, tweetLatitude, tweetLongitude, userLatitude, userLongitude, differenceOfLocation])
+            my_file_writer.writerow([tweetLatitude, tweetLongitude, date_created, user, text])
 
 
 
