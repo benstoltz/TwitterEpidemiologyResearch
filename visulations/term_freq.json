@@ -1,0 +1,270 @@
+{
+  "axes": [
+    {
+      "scale": "x",
+      "type": "x"
+    },
+    {
+      "scale": "y",
+      "type": "y"
+    }
+  ],
+  "data": [
+    {
+      "name": "table",
+      "values": [
+        {
+          "col": "data",
+          "idx": "I",
+          "val": 36225
+        },
+        {
+          "col": "data",
+          "idx": "Que",
+          "val": 7349
+        },
+        {
+          "col": "data",
+          "idx": "No",
+          "val": 7226
+        },
+        {
+          "col": "data",
+          "idx": "A",
+          "val": 6732
+        },
+        {
+          "col": "data",
+          "idx": "love",
+          "val": 5349
+        },
+        {
+          "col": "data",
+          "idx": "Me",
+          "val": 4856
+        },
+        {
+          "col": "data",
+          "idx": "si",
+          "val": 4776
+        },
+        {
+          "col": "data",
+          "idx": "3",
+          "val": 4757
+        },
+        {
+          "col": "data",
+          "idx": "meu",
+          "val": 4714
+        },
+        {
+          "col": "data",
+          "idx": "ser",
+          "val": 4596
+        },
+        {
+          "col": "data",
+          "idx": "get",
+          "val": 4571
+        },
+        {
+          "col": "data",
+          "idx": "amp",
+          "val": 4501
+        },
+        {
+          "col": "data",
+          "idx": "mais",
+          "val": 4437
+        },
+        {
+          "col": "data",
+          "idx": "don't",
+          "val": 4429
+        },
+        {
+          "col": "data",
+          "idx": "2",
+          "val": 4297
+        },
+        {
+          "col": "data",
+          "idx": "em",
+          "val": 4083
+        },
+        {
+          "col": "data",
+          "idx": "uma",
+          "val": 3846
+        },
+        {
+          "col": "data",
+          "idx": "n",
+          "val": 3728
+        },
+        {
+          "col": "data",
+          "idx": "minha",
+          "val": 3704
+        },
+        {
+          "col": "data",
+          "idx": "u",
+          "val": 3649
+        },
+        {
+          "col": "data",
+          "idx": "know",
+          "val": 3628
+        },
+        {
+          "col": "data",
+          "idx": "ta",
+          "val": 3532
+        },
+        {
+          "col": "data",
+          "idx": "vida",
+          "val": 3472
+        },
+        {
+          "col": "data",
+          "idx": "vai",
+          "val": 3451
+        },
+        {
+          "col": "data",
+          "idx": "1",
+          "val": 3289
+        },
+        {
+          "col": "data",
+          "idx": "Y",
+          "val": 3235
+        },
+        {
+          "col": "data",
+          "idx": "one",
+          "val": 3225
+        },
+        {
+          "col": "data",
+          "idx": "amo",
+          "val": 3196
+        },
+        {
+          "col": "data",
+          "idx": "go",
+          "val": 3169
+        },
+        {
+          "col": "data",
+          "idx": "ver",
+          "val": 3134
+        }
+      ]
+    },
+    {
+      "name": "stats",
+      "source": "table",
+      "transform": [
+        {
+          "keys": [
+            "data.idx"
+          ],
+          "type": "facet"
+        },
+        {
+          "type": "stats",
+          "value": "data.val"
+        }
+      ]
+    }
+  ],
+  "height": 500,
+  "legends": [],
+  "marks": [
+    {
+      "from": {
+        "data": "table",
+        "transform": [
+          {
+            "keys": [
+              "data.col"
+            ],
+            "type": "facet"
+          },
+          {
+            "height": "data.val",
+            "point": "data.idx",
+            "type": "stack"
+          }
+        ]
+      },
+      "marks": [
+        {
+          "properties": {
+            "enter": {
+              "fill": {
+                "field": "data.col",
+                "scale": "color"
+              },
+              "width": {
+                "band": true,
+                "offset": -1,
+                "scale": "x"
+              },
+              "x": {
+                "field": "data.idx",
+                "scale": "x"
+              },
+              "y": {
+                "field": "y",
+                "scale": "y"
+              },
+              "y2": {
+                "field": "y2",
+                "scale": "y"
+              }
+            }
+          },
+          "type": "rect"
+        }
+      ],
+      "type": "group"
+    }
+  ],
+  "padding": "auto",
+  "scales": [
+    {
+      "domain": {
+        "data": "table",
+        "field": "data.idx"
+      },
+      "name": "x",
+      "range": "width",
+      "type": "ordinal",
+      "zero": false
+    },
+    {
+      "domain": {
+        "data": "stats",
+        "field": "sum"
+      },
+      "name": "y",
+      "nice": true,
+      "range": "height"
+    },
+    {
+      "domain": {
+        "data": "table",
+        "field": "data.col"
+      },
+      "name": "color",
+      "range": "category20",
+      "type": "ordinal"
+    }
+  ],
+  "width": 960
+}

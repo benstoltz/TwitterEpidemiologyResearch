@@ -139,7 +139,7 @@ for response in stream:
             tweet['user']['description'] = user.get('description', default)
             tweet['user']['friends_count'] = user.get('friends_count', default)
             tweet['user']['location'] = user.get('location', default)
-            tweet['user']['geocoded'] = geocode_user_location(tweet['user']['location'])
+            # tweet['user']['geocoded'] = geocode_user_location(tweet['user']['location'])
             tweet['user']['following'] = user.get('following', default)
             tweet['user']['geo_enabled'] = user.get('geo_enabled', default)
             tweet['user']['name'] = user.get('name', default)

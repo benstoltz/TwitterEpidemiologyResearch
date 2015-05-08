@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from email.utils import parsedate_tz
 
 
-# Fucntion to convert the Twitter date/time String
+# Function to convert the Twitter date/time String
 
 def to_datetime(time):
     time_tuple = parsedate_tz(time.strip())
@@ -52,7 +52,7 @@ def load_from_mongo(mongo_db, mongo_db_coll, return_cursor=False, criteria=None,
                 userLongitude = 0
                 differenceOfLocation = euclidean_distance(userLatitude, tweetLatitude, userLongitude, tweetLongitude)
 
-            my_file_writer.writerow([user, userlocation, tweetLatitude, tweetLongitude, userLatitude, userLongitude, differenceOfLocation])
+            my_file_writer.writerow([date_created, userlocation, tweetLatitude, tweetLongitude, userLatitude, userLongitude, differenceOfLocation])
 
 
 

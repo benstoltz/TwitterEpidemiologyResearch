@@ -1,0 +1,195 @@
+{
+  "axes": [
+    {
+      "scale": "x",
+      "type": "x"
+    },
+    {
+      "scale": "y",
+      "type": "y"
+    }
+  ],
+  "data": [
+    {
+      "name": "table",
+      "values": [
+        {
+          "col": "data",
+          "idx": "@",
+          "val": 15873
+        },
+        {
+          "col": "data",
+          "idx": "@Juanjaramilloe",
+          "val": 248
+        },
+        {
+          "col": "data",
+          "idx": "@CloseupPH",
+          "val": 70
+        },
+        {
+          "col": "data",
+          "idx": "@Soymarioruiz",
+          "val": 70
+        },
+        {
+          "col": "data",
+          "idx": "@pcastagnoli",
+          "val": 67
+        },
+        {
+          "col": "data",
+          "idx": "@jreast_official",
+          "val": 47
+        },
+        {
+          "col": "data",
+          "idx": "@CARPoficial",
+          "val": 42
+        },
+        {
+          "col": "data",
+          "idx": "@dinahjane97",
+          "val": 42
+        },
+        {
+          "col": "data",
+          "idx": "@NiallOfficial",
+          "val": 39
+        },
+        {
+          "col": "data",
+          "idx": "@BocaJrsOficial",
+          "val": 37
+        },
+        {
+          "col": "data",
+          "idx": "@ElJuanpaZurita",
+          "val": 33
+        },
+        {
+          "col": "data",
+          "idx": "@normanintense",
+          "val": 33
+        },
+        {
+          "col": "data",
+          "idx": "@Nikkimackliff",
+          "val": 31
+        },
+        {
+          "col": "data",
+          "idx": "@ChartsEcuador",
+          "val": 31
+        },
+        {
+          "col": "data",
+          "idx": "@radiohola989",
+          "val": 31
+        }
+      ]
+    },
+    {
+      "name": "stats",
+      "source": "table",
+      "transform": [
+        {
+          "keys": [
+            "data.idx"
+          ],
+          "type": "facet"
+        },
+        {
+          "type": "stats",
+          "value": "data.val"
+        }
+      ]
+    }
+  ],
+  "height": 500,
+  "legends": [],
+  "marks": [
+    {
+      "from": {
+        "data": "table",
+        "transform": [
+          {
+            "keys": [
+              "data.col"
+            ],
+            "type": "facet"
+          },
+          {
+            "height": "data.val",
+            "point": "data.idx",
+            "type": "stack"
+          }
+        ]
+      },
+      "marks": [
+        {
+          "properties": {
+            "enter": {
+              "fill": {
+                "field": "data.col",
+                "scale": "color"
+              },
+              "width": {
+                "band": true,
+                "offset": -1,
+                "scale": "x"
+              },
+              "x": {
+                "field": "data.idx",
+                "scale": "x"
+              },
+              "y": {
+                "field": "y",
+                "scale": "y"
+              },
+              "y2": {
+                "field": "y2",
+                "scale": "y"
+              }
+            }
+          },
+          "type": "rect"
+        }
+      ],
+      "type": "group"
+    }
+  ],
+  "padding": "auto",
+  "scales": [
+    {
+      "domain": {
+        "data": "table",
+        "field": "data.idx"
+      },
+      "name": "x",
+      "range": "width",
+      "type": "ordinal",
+      "zero": false
+    },
+    {
+      "domain": {
+        "data": "stats",
+        "field": "sum"
+      },
+      "name": "y",
+      "nice": true,
+      "range": "height"
+    },
+    {
+      "domain": {
+        "data": "table",
+        "field": "data.col"
+      },
+      "name": "color",
+      "range": "category20",
+      "type": "ordinal"
+    }
+  ],
+  "width": 960
+}
