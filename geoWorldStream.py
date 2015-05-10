@@ -63,7 +63,6 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 
     while True:
         try:
-            print "frank"
             return twitter_api_func(*args, **kw)
         except twitter.api.TwitterHTTPError, e:
             error_count = 0

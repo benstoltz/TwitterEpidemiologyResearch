@@ -45,7 +45,6 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 
     while True:
         try:
-            print "frank"
             return twitter_api_func(*args, **kw)
         except twitter.api.TwitterHTTPError, e:
             error_count = 0
@@ -57,13 +56,13 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
             print >> sys.stderr, "URLError encountered. Continuing."
             if error_count > max_errors:
                 print >> sys.stderr, "Too many consecutive errors...bailing out."
-                raise
+                raise e
         except BadStatusLine, e:
             error_count += 1
             print >> sys.stderr, "BadStatusLine encountered. Continuing."
             if error_count > max_errors:
                 print >> sys.stderr, "Too many consecutive errors...bailing out."
-                raise
+                raise e
 
 
 def save_to_mongo(data, mongo_db, mongo_db_collection):

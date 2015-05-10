@@ -1,0 +1,197 @@
+<html>
+<head>
+<title>geoWorldStream.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: rgb(0,0,0); font-weight: normal; font-style: normal; }
+.s0 { color: rgb(128,128,128); }
+.s1 { color: rgb(169,183,198); }
+.s2 { color: rgb(204,120,50); font-weight: bold; }
+.s3 { color: rgb(165,194,97); }
+.s4 { color: rgb(204,120,50); }
+.s5 { color: rgb(104,151,187); }
+</style>
+</head>
+<BODY BGCOLOR="#2b2b2b">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#C0C0C0" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+geoWorldStream.py</FONT>
+</center></TD></TR></TABLE>
+<pre>
+
+<span class="s0"># -*- coding: UTF-8 -*-</span><span class="s1"> 
+</span><span class="s2">import </span><span class="s1">sys 
+</span><span class="s2">import </span><span class="s1">time 
+</span><span class="s2">from </span><span class="s1">urllib2 </span><span class="s2">import </span><span class="s1">URLError 
+</span><span class="s2">from </span><span class="s1">httplib </span><span class="s2">import </span><span class="s1">BadStatusLine 
+</span><span class="s2">import </span><span class="s1">twitter 
+</span><span class="s2">import </span><span class="s1">pymongo 
+</span><span class="s2">import </span><span class="s1">geocoder 
+ 
+ 
+</span><span class="s0"># Auth for Twitter</span><span class="s1"> 
+</span><span class="s2">def </span><span class="s1">oauth_login(): 
+ 
+    OAUTH_TOKEN = </span><span class="s3">'477055521-PpCBhLezySPX8CWmSCyUxRmQU7AMZyB5PqyvPNJF'</span><span class="s1"> 
+    OAUTH_TOKEN_SECRET = </span><span class="s3">'PdPH2nrikeBGiHlfg3vm2dWys6knZSQYYMvnF5xFKy14G'</span><span class="s1"> 
+    CONSUMER_KEY = </span><span class="s3">'eqOV0Iu2M1114ILJW87nHMoxX'</span><span class="s1"> 
+    CONSUMER_SECRET = </span><span class="s3">'8Gg7KoKpcRJlADXWRXb78PaaHcx6KAIU4Q4sxbeatC0Bpyf9gh'</span><span class="s1"> 
+ 
+ 
+    </span><span class="s0"># Define Auth</span><span class="s1"> 
+    auth = twitter.oauth.OAuth(OAUTH_TOKEN</span><span class="s4">, </span><span class="s1">OAUTH_TOKEN_SECRET</span><span class="s4">, </span><span class="s1">CONSUMER_KEY</span><span class="s4">, </span><span class="s1">CONSUMER_SECRET) 
+ 
+    </span><span class="s0"># Define Twitter API</span><span class="s1"> 
+    twitter_api = twitter.Twitter(auth=auth) 
+ 
+    </span><span class="s2">return </span><span class="s1">twitter_api 
+ 
+</span><span class="s2">def </span><span class="s1">make_twitter_request(twitter_api_func</span><span class="s4">, </span><span class="s1">max_errors=</span><span class="s5">10</span><span class="s4">, </span><span class="s1">*args</span><span class="s4">, </span><span class="s1">**kw): 
+ 
+    </span><span class="s2">def </span><span class="s1">handle_twitter_http_error(e</span><span class="s4">, </span><span class="s1">wait_period=</span><span class="s5">2</span><span class="s4">, </span><span class="s1">sleep_when_rate_limited=True): 
+ 
+        </span><span class="s2">if </span><span class="s1">wait_period &gt; </span><span class="s5">3600</span><span class="s1">:  </span><span class="s0"># Seconds</span><span class="s1"> 
+            </span><span class="s2">print </span><span class="s1">&gt;&gt; sys.stderr</span><span class="s4">, </span><span class="s3">'Too many retries. Quitting.'</span><span class="s1"> 
+            </span><span class="s2">raise </span><span class="s1">e 
+        </span><span class="s0"># See https://dev.twitter.com/overview/api/response-codes for codes</span><span class="s1"> 
+        </span><span class="s2">if </span><span class="s1">e.e.code == </span><span class="s5">401</span><span class="s1">: 
+            </span><span class="s2">print </span><span class="s1">&gt;&gt; sys.stderr</span><span class="s4">, </span><span class="s3">'Encountered 401 Error (not authorized)'</span><span class="s1"> 
+            </span><span class="s2">return </span><span class="s1">None 
+        </span><span class="s2">elif </span><span class="s1">e.e.code == </span><span class="s5">404</span><span class="s1">: 
+            </span><span class="s2">print </span><span class="s1">&gt;&gt; sys.stderr</span><span class="s4">, </span><span class="s3">'Encountered 404 Error (not found)'</span><span class="s1"> 
+            </span><span class="s2">return </span><span class="s1">None 
+        </span><span class="s2">elif </span><span class="s1">e.e.code == </span><span class="s5">429</span><span class="s1">: 
+            </span><span class="s2">print </span><span class="s1">&gt;&gt; sys.stderr</span><span class="s4">, </span><span class="s3">'Encountered 429 Error (rate limit exceeded)'</span><span class="s1"> 
+            </span><span class="s2">if </span><span class="s1">sleep_when_rate_limited: 
+                </span><span class="s2">print </span><span class="s1">&gt;&gt; sys.stderr</span><span class="s4">, </span><span class="s3">'Retrying in 15 minutes...ZzZzZzZz...'</span><span class="s1"> 
+                time.sleep(</span><span class="s5">60</span><span class="s1">*</span><span class="s5">15 </span><span class="s1">+ </span><span class="s5">5</span><span class="s1">) 
+                </span><span class="s2">print </span><span class="s1">&gt;&gt; sys.stderr</span><span class="s4">, </span><span class="s3">'...ZzZzZ...Awake and trying again.'</span><span class="s1"> 
+                </span><span class="s2">return </span><span class="s5">2</span><span class="s1"> 
+            </span><span class="s2">else</span><span class="s1">: 
+                </span><span class="s2">raise </span><span class="s1">e  </span><span class="s0"># Caller must handle the rate limiting error</span><span class="s1"> 
+        </span><span class="s2">elif </span><span class="s1">e.e.code </span><span class="s2">in </span><span class="s1">(</span><span class="s5">500</span><span class="s4">, </span><span class="s5">502</span><span class="s4">, </span><span class="s5">503</span><span class="s4">, </span><span class="s5">504</span><span class="s1">): 
+            </span><span class="s2">print </span><span class="s1">&gt;&gt; sys.stderr</span><span class="s4">, </span><span class="s3">'Encountered %i Error. Retrying in %i seconds' </span><span class="s1">% (e.e.code</span><span class="s4">, </span><span class="s1">wait_period) 
+            time.sleep(wait_period) 
+            wait_period *= </span><span class="s5">1.5</span><span class="s1"> 
+            </span><span class="s2">return </span><span class="s1">wait_period 
+        </span><span class="s2">else</span><span class="s1">: 
+            </span><span class="s2">raise </span><span class="s1">e 
+ 
+        </span><span class="s0"># End of nested helper function</span><span class="s1"> 
+ 
+    wait_period = </span><span class="s5">2</span><span class="s1"> 
+    error_count = </span><span class="s5">0</span><span class="s1"> 
+ 
+    </span><span class="s2">while </span><span class="s1">True: 
+        </span><span class="s2">try</span><span class="s1">: 
+            </span><span class="s2">print </span><span class="s3">&quot;frank&quot;</span><span class="s1"> 
+            </span><span class="s2">return </span><span class="s1">twitter_api_func(*args</span><span class="s4">, </span><span class="s1">**kw) 
+        </span><span class="s2">except </span><span class="s1">twitter.api.TwitterHTTPError</span><span class="s4">, </span><span class="s1">e: 
+            error_count = </span><span class="s5">0</span><span class="s1"> 
+            wait_period = handle_twitter_http_error(e</span><span class="s4">, </span><span class="s1">wait_period) 
+            </span><span class="s2">if </span><span class="s1">wait_period </span><span class="s2">is </span><span class="s1">None: 
+                </span><span class="s2">return</span><span class="s1"> 
+        </span><span class="s2">except </span><span class="s1">URLError</span><span class="s4">, </span><span class="s1">e: 
+            error_count += </span><span class="s5">1</span><span class="s1"> 
+            </span><span class="s2">print </span><span class="s1">&gt;&gt; sys.stderr</span><span class="s4">, </span><span class="s3">&quot;URLError encountered. Continuing.&quot;</span><span class="s1"> 
+            </span><span class="s2">if </span><span class="s1">error_count &gt; max_errors: 
+                </span><span class="s2">print </span><span class="s1">&gt;&gt; sys.stderr</span><span class="s4">, </span><span class="s3">&quot;Too many consecutive errors...bailing out.&quot;</span><span class="s1"> 
+                </span><span class="s2">raise</span><span class="s1"> 
+        </span><span class="s2">except </span><span class="s1">BadStatusLine</span><span class="s4">, </span><span class="s1">e: 
+            error_count += </span><span class="s5">1</span><span class="s1"> 
+            </span><span class="s2">print </span><span class="s1">&gt;&gt; sys.stderr</span><span class="s4">, </span><span class="s3">&quot;BadStatusLine encountered. Continuing.&quot;</span><span class="s1"> 
+            </span><span class="s2">if </span><span class="s1">error_count &gt; max_errors: 
+                </span><span class="s2">print </span><span class="s1">&gt;&gt; sys.stderr</span><span class="s4">, </span><span class="s3">&quot;Too many consecutive errors...bailing out.&quot;</span><span class="s1"> 
+                </span><span class="s2">raise</span><span class="s1"> 
+ 
+ 
+</span><span class="s2">def </span><span class="s1">save_to_mongo(data</span><span class="s4">, </span><span class="s1">mongo_db</span><span class="s4">, </span><span class="s1">mongo_db_collection): 
+    </span><span class="s0"># Connects to the MongoDB server running on</span><span class="s1"> 
+    </span><span class="s0"># localhost: 27017 by default</span><span class="s1"> 
+ 
+    </span><span class="s0"># Get a reference to a particular database</span><span class="s1"> 
+ 
+    db = client[mongo_db] 
+ 
+    </span><span class="s0"># Reference a particular collection in the database</span><span class="s1"> 
+ 
+    coll = db[mongo_db_collection] 
+ 
+    </span><span class="s0"># Perform a bulk insert and return the IDs</span><span class="s1"> 
+ 
+    </span><span class="s2">return </span><span class="s1">coll.insert(data) 
+ 
+</span><span class="s2">def </span><span class="s1">geocode_user_location(location): 
+    location = location.encode(</span><span class="s3">'ascii'</span><span class="s4">, </span><span class="s3">'ignore'</span><span class="s1">).decode(</span><span class="s3">'ascii'</span><span class="s1">) 
+    g = geocoder.google(location) 
+    </span><span class="s2">if </span><span class="s1">len(g.latlng) != </span><span class="s5">0</span><span class="s1">: 
+        </span><span class="s2">return </span><span class="s1">[g.latlng[</span><span class="s3">'lat'</span><span class="s1">]</span><span class="s4">, </span><span class="s1">g.latlng[</span><span class="s3">'lng'</span><span class="s1">]] 
+    </span><span class="s2">else</span><span class="s1">: 
+        </span><span class="s2">return </span><span class="s1">[</span><span class="s5">0</span><span class="s4">, </span><span class="s5">0</span><span class="s1">] 
+ 
+client = pymongo.MongoClient() 
+ 
+</span><span class="s0"># define world bounding box</span><span class="s1"> 
+query = </span><span class="s3">''</span><span class="s1"> 
+location = </span><span class="s3">'-180,-90,180,90'</span><span class="s1"> 
+ 
+twitterAccess = oauth_login() 
+ 
+twitter_stream = twitter.TwitterStream(auth=twitterAccess.auth) 
+ 
+stream = make_twitter_request(twitter_stream.statuses.filter</span><span class="s4">, </span><span class="s1">locations=location) 
+ 
+</span><span class="s2">for </span><span class="s1">response </span><span class="s2">in </span><span class="s1">stream: 
+    </span><span class="s2">try</span><span class="s1">: 
+        default = </span><span class="s3">'null'</span><span class="s1"> 
+        tweet = {} 
+        tweet[</span><span class="s3">'favorited'</span><span class="s1">] = response.get(</span><span class="s3">'favorited'</span><span class="s4">, </span><span class="s1">default) 
+        tweet[</span><span class="s3">'contributors'</span><span class="s1">] = response.get(</span><span class="s3">'contributors'</span><span class="s4">, </span><span class="s1">default) 
+        tweet[</span><span class="s3">'text'</span><span class="s1">] = response.get(</span><span class="s3">'text'</span><span class="s4">, </span><span class="s1">default) 
+        tweet[</span><span class="s3">'in_reply_to_status_id'</span><span class="s1">] = response.get(</span><span class="s3">'in_reply_to_status_id'</span><span class="s4">, </span><span class="s1">default) 
+        user = response.get(</span><span class="s3">'user'</span><span class="s4">, </span><span class="s1">default) 
+        </span><span class="s2">if </span><span class="s1">user != </span><span class="s3">'null'</span><span class="s1">: 
+            tweet[</span><span class="s3">'user'</span><span class="s1">] = {} 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'id'</span><span class="s1">] = user.get(</span><span class="s3">'id'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'followers_count'</span><span class="s1">] = user.get(</span><span class="s3">'followers_count'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'listed_count'</span><span class="s1">] = user.get(</span><span class="s3">'listed_count'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'utc_offset'</span><span class="s1">] = user.get(</span><span class="s3">'utc_offset'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'statuses_count'</span><span class="s1">] = user.get(</span><span class="s3">'statuses_count'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'description'</span><span class="s1">] = user.get(</span><span class="s3">'description'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'friends_count'</span><span class="s1">] = user.get(</span><span class="s3">'friends_count'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'location'</span><span class="s1">] = user.get(</span><span class="s3">'location'</span><span class="s4">, </span><span class="s1">default) 
+            </span><span class="s0"># tweet['user']['geocoded'] = geocode_user_location(tweet['user']['location'])</span><span class="s1"> 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'following'</span><span class="s1">] = user.get(</span><span class="s3">'following'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'geo_enabled'</span><span class="s1">] = user.get(</span><span class="s3">'geo_enabled'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'name'</span><span class="s1">] = user.get(</span><span class="s3">'name'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'lang'</span><span class="s1">] = user.get(</span><span class="s3">'lang'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'favourites_count'</span><span class="s1">] = user.get(</span><span class="s3">'favourites_count'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'screen_name'</span><span class="s1">] = user.get(</span><span class="s3">'screen_name'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'account_created'</span><span class="s1">] = user.get(</span><span class="s3">'created_at'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'contributors_enabled'</span><span class="s1">] = user.get(</span><span class="s3">'contributors_enabled'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'time_zone'</span><span class="s1">] = user.get(</span><span class="s3">'time_zone'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'default_profile'</span><span class="s1">] = user.get(</span><span class="s3">'default_profile'</span><span class="s4">, </span><span class="s1">default) 
+            tweet[</span><span class="s3">'user'</span><span class="s1">][</span><span class="s3">'is_translator'</span><span class="s1">] = user.get(</span><span class="s3">'is_translator'</span><span class="s4">, </span><span class="s1">default) 
+        tweet[</span><span class="s3">'id'</span><span class="s1">] = response.get(</span><span class="s3">'id'</span><span class="s4">, </span><span class="s1">default) 
+        tweet[</span><span class="s3">'favorite_count'</span><span class="s1">] = response.get(</span><span class="s3">'favorite_count'</span><span class="s4">, </span><span class="s1">default) 
+        tweet[</span><span class="s3">'lang'</span><span class="s1">] = response.get(</span><span class="s3">'lang'</span><span class="s4">, </span><span class="s1">default) 
+        tweet[</span><span class="s3">'retweeted'</span><span class="s1">] = response.get(</span><span class="s3">'retweeted'</span><span class="s4">, </span><span class="s1">default) 
+        tweet[</span><span class="s3">'retweet_count'</span><span class="s1">] = response.get(</span><span class="s3">'retweet_count'</span><span class="s4">, </span><span class="s1">default) 
+        tweet[</span><span class="s3">'date_tweeted'</span><span class="s1">] = response.get(</span><span class="s3">'created_at'</span><span class="s4">, </span><span class="s1">default) 
+        </span><span class="s2">try</span><span class="s1">: 
+            </span><span class="s2">if </span><span class="s1">response[</span><span class="s3">'geo'</span><span class="s1">]: 
+                tweet[</span><span class="s3">'geo'</span><span class="s1">] = response.get(</span><span class="s3">'geo'</span><span class="s4">, </span><span class="s1">default) 
+                tweet[</span><span class="s3">'coordinates'</span><span class="s1">] = response.get(</span><span class="s3">'coordinates'</span><span class="s4">, </span><span class="s1">default) 
+                tweet[</span><span class="s3">'place'</span><span class="s1">] = response.get(</span><span class="s3">'place'</span><span class="s4">, </span><span class="s1">default) 
+                save_to_mongo(tweet</span><span class="s4">, </span><span class="s3">'geoWorldStreamDatabase'</span><span class="s4">, </span><span class="s3">'geolocated'</span><span class="s1">) 
+            </span><span class="s2">else</span><span class="s1">: 
+                save_to_mongo(tweet</span><span class="s4">, </span><span class="s3">'geoWorldStreamDatabase'</span><span class="s4">, </span><span class="s3">'tweets'</span><span class="s1">) 
+        </span><span class="s2">except </span><span class="s1">KeyError: 
+            </span><span class="s2">pass</span><span class="s1"> 
+ 
+    </span><span class="s2">except </span><span class="s1">AttributeError: 
+        </span><span class="s2">pass</span><span class="s1"> 
+</span></pre>
+</body>
+</html>
