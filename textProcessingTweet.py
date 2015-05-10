@@ -106,19 +106,19 @@ def load_from_mongo(mongo_db, mongo_db_coll, return_cursor=False, criteria=None,
 
     print count_only.most_common(30)
 
-    # # bar chart to visualize hash
-    # hash_freq = count_hash.most_common(15)
-    # labels, freq = zip(*hash_freq)
-    # data = {'data': freq, 'x': labels}
-    # bar = vincent.Bar(data, iter_idx='x')
-    # bar.to_json('hash_freq.json')
-    #
-    # # bar chart to visualize mentions
-    # mentions_freq = count_mentions.most_common(15)
-    # labels, freq = zip(*mentions_freq)
-    # data = {'data': freq, 'x': labels}
-    # bar = vincent.Bar(data, iter_idx='x')
-    # bar.to_json('mentions_freq.json')
+    # bar chart to visualize hash
+    hash_freq = count_hash.most_common(15)
+    labels, freq = zip(*hash_freq)
+    data = {'data': freq, 'x': labels}
+    bar = vincent.Bar(data, iter_idx='x')
+    bar.to_json('hash_freq.json')
+
+    # bar chart to visualize mentions
+    mentions_freq = count_mentions.most_common(15)
+    labels, freq = zip(*mentions_freq)
+    data = {'data': freq, 'x': labels}
+    bar = vincent.Bar(data, iter_idx='x')
+    bar.to_json('mentions_freq.json')
 
 
 

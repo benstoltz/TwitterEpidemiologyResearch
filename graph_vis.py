@@ -67,7 +67,7 @@ J = nx.DiGraph()
 for index, row in loaded_tweets.iterrows():
 
     this_user_id = row['author']
-    author = row['retweet_of']
+    author = row['reply_to']
     followers = row['followers']
     age = row['age']
     rtfollowers = row['rtfollowers']
