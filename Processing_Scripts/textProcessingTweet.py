@@ -126,4 +126,4 @@ def load_from_mongo(mongo_db, mongo_db_coll, return_cursor=False, criteria=None,
 
 
 
-load_from_mongo('geoWorldStreamDatabase', 'geolocated')
+load_from_mongo('ncStreamDatabase', 'geolocated')

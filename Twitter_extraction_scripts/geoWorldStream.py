@@ -11,10 +11,10 @@ import geocoder
 # Auth for Twitter
 def oauth_login():
 
-    OAUTH_TOKEN = '477055521-PpCBhLezySPX8CWmSCyUxRmQU7AMZyB5PqyvPNJF'
-    OAUTH_TOKEN_SECRET = 'PdPH2nrikeBGiHlfg3vm2dWys6knZSQYYMvnF5xFKy14G'
-    CONSUMER_KEY = 'eqOV0Iu2M1114ILJW87nHMoxX'
-    CONSUMER_SECRET = '8Gg7KoKpcRJlADXWRXb78PaaHcx6KAIU4Q4sxbeatC0Bpyf9gh'
+    OAUTH_TOKEN = '477055521-K2DqMcPZ58XCnBXwWztd3VL1bvtYCJxjVwMcRwMy'
+    OAUTH_TOKEN_SECRET = 'ZtgE56kWCk8lbtgar1bO86XTm9ErAOqfEZ6Bs562i32ll'
+    CONSUMER_KEY = 'wp1PH6r2evCSvRKf7CMo1dQr9'
+    CONSUMER_SECRET = 'NdNqvkrRrv5gxExyo8vHddfTrDYuSpiszt2xp8Hll8TUbMSdtT'
 
 
     # Define Auth
@@ -62,6 +62,7 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
     error_count = 0
 
     while True:
+        print "frank"
         try:
             return twitter_api_func(*args, **kw)
         except twitter.api.TwitterHTTPError, e:
@@ -99,6 +100,7 @@ def save_to_mongo(data, mongo_db, mongo_db_collection):
 
     return coll.insert(data)
 
+
 def geocode_user_location(location):
     location = location.encode('ascii', 'ignore').decode('ascii')
     g = geocoder.google(location)
@@ -112,12 +114,13 @@ client = pymongo.MongoClient()
 # define world bounding box
 query = ''
 location = '-180,-90,180,90'
+nclocation='-85,34,-75,37,'
 
 twitterAccess = oauth_login()
 
 twitter_stream = twitter.TwitterStream(auth=twitterAccess.auth)
 
-stream = make_twitter_request(twitter_stream.statuses.filter, locations=location)
+stream = make_twitter_request(twitter_stream.statuses.filter, locations=nclocation)
 
 for response in stream:
     try:
@@ -138,7 +141,6 @@ for response in stream:
             tweet['user']['description'] = user.get('description', default)
             tweet['user']['friends_count'] = user.get('friends_count', default)
             tweet['user']['location'] = user.get('location', default)
-            # tweet['user']['geocoded'] = geocode_user_location(tweet['user']['location'])
             tweet['user']['following'] = user.get('following', default)
             tweet['user']['geo_enabled'] = user.get('geo_enabled', default)
             tweet['user']['name'] = user.get('name', default)
@@ -161,9 +163,9 @@ for response in stream:
                 tweet['geo'] = response.get('geo', default)
                 tweet['coordinates'] = response.get('coordinates', default)
                 tweet['place'] = response.get('place', default)
-                save_to_mongo(tweet, 'geoWorldStreamDatabase', 'geolocated')
+                save_to_mongo(tweet, 'ncStreamDatabase', 'geolocated')
             else:
-                save_to_mongo(tweet, 'geoWorldStreamDatabase', 'tweets')
+                save_to_mongo(tweet, 'ncStreamDatabase', 'tweets')
         except KeyError:
             pass
 

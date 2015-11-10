@@ -101,14 +101,15 @@ def save_to_mongo(data, mongo_db, mongo_db_collection):
 client = pymongo.MongoClient()
 
 # define world bounding box
-query = 'ebola'
+# query = 'snow,blizzard,hail,freezing',
+location = '-180,-90,180,90'
 
 
 twitterAccess = oauth_login()
 
 twitter_stream = twitter.TwitterStream(auth=twitterAccess.auth)
 
-stream = make_twitter_request(twitter_stream.statuses.filter, track=query)
+stream = make_twitter_request(twitter_stream.statuses.filter, track=location)
 
 for response in stream:
     try:
@@ -151,9 +152,9 @@ for response in stream:
                 tweet['geo'] = response.get('geo', default)
                 tweet['coordinates'] = response.get('coordinates', default)
                 tweet['place'] = response.get('place', default)
-                save_to_mongo(tweet, 'ebolaStreamDatabase', 'geolocated')
+                save_to_mongo(tweet, 'geoWorldStreamDatabase', 'geolocated')
             else:
-                save_to_mongo(tweet, 'ebolaStreamDatabase', 'tweets')
+                save_to_mongo(tweet, 'geoWorldStreamDatabase', 'tweets')
         except KeyError:
             pass
 

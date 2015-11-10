@@ -1,0 +1,91 @@
+<html>
+<head>
+<title>geocodetoCSV.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: rgb(0,0,0); font-weight: normal; font-style: normal; }
+.s0 { color: rgb(204,120,50); font-weight: bold; }
+.s1 { color: rgb(169,183,198); }
+.s2 { color: rgb(204,120,50); }
+.s3 { color: rgb(128,128,128); }
+.s4 { color: rgb(104,151,187); }
+.s5 { color: rgb(165,194,97); }
+</style>
+</head>
+<BODY BGCOLOR="#2b2b2b">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#C0C0C0" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+geocodetoCSV.py</FONT>
+</center></TD></TR></TABLE>
+<pre>
+
+<span class="s0">import </span><span class="s1">pymongo 
+</span><span class="s0">import </span><span class="s1">geocoder 
+</span><span class="s0">import </span><span class="s1">csv 
+</span><span class="s0">from </span><span class="s1">datetime </span><span class="s0">import </span><span class="s1">datetime</span><span class="s2">, </span><span class="s1">timedelta 
+</span><span class="s0">from </span><span class="s1">email.utils </span><span class="s0">import </span><span class="s1">parsedate_tz 
+ 
+ 
+</span><span class="s3"># Function to convert the Twitter date/time String</span><span class="s1"> 
+ 
+</span><span class="s0">def </span><span class="s1">to_datetime(time): 
+    time_tuple = parsedate_tz(time.strip()) 
+    dt = datetime(*time_tuple[:</span><span class="s4">6</span><span class="s1">]) 
+    </span><span class="s0">return </span><span class="s1">str(dt - timedelta(seconds=time_tuple[-</span><span class="s4">1</span><span class="s1">])) 
+ 
+</span><span class="s0">def </span><span class="s1">euclidean_distance(xCoordinate1</span><span class="s2">, </span><span class="s1">xCoordinate2</span><span class="s2">, </span><span class="s1">yCoordinate1</span><span class="s2">, </span><span class="s1">yCoordinate2): 
+    differenceX = xCoordinate1 - xCoordinate2 
+    differenceY = yCoordinate1 - yCoordinate2 
+    </span><span class="s0">return </span><span class="s1">pow(pow(differenceX</span><span class="s2">, </span><span class="s4">2</span><span class="s1">) + pow(differenceY</span><span class="s2">, </span><span class="s4">2</span><span class="s1">)</span><span class="s2">, </span><span class="s4">0.5</span><span class="s1">) 
+ 
+ 
+</span><span class="s3"># Function to search collection based on a query</span><span class="s1"> 
+ 
+</span><span class="s0">def </span><span class="s1">load_from_mongo(mongo_db</span><span class="s2">, </span><span class="s1">mongo_db_coll</span><span class="s2">, </span><span class="s1">return_cursor=False</span><span class="s2">, </span><span class="s1">criteria=None</span><span class="s2">, </span><span class="s1">projection=None</span><span class="s2">, </span><span class="s1">**mongo_conn_kw): 
+ 
+    </span><span class="s3"># Can use critera and projection to limit the data that is returned</span><span class="s1"> 
+    </span><span class="s3"># look at http://docs.mongodb.org/manual/reference/method/db.collection.find/</span><span class="s1"> 
+ 
+    </span><span class="s3"># Can use MongoDB's aggregations framework for more detailed queries</span><span class="s1"> 
+ 
+    client = pymongo.MongoClient(**mongo_conn_kw) 
+    db = client[mongo_db] 
+    coll = db[mongo_db_coll] 
+ 
+    tweet_iterator = coll.find() 
+    </span><span class="s0">print </span><span class="s1">tweet_iterator 
+    </span><span class="s0">with </span><span class="s1">open(</span><span class="s5">'outputs/geoWorld.csv'</span><span class="s2">, </span><span class="s5">'wb'</span><span class="s1">) </span><span class="s0">as </span><span class="s1">geoworldFile: 
+        my_file_writer = csv.writer(geoworldFile) 
+        my_file_writer.writerow([</span><span class="s5">'latitude'</span><span class="s2">, </span><span class="s5">'longitude'</span><span class="s2">, </span><span class="s5">'userlat'</span><span class="s2">, </span><span class="s5">'userlng'</span><span class="s2">, </span><span class="s5">'difference'</span><span class="s2">, </span><span class="s5">'user'</span><span class="s1">]) 
+        </span><span class="s0">for </span><span class="s1">tweet </span><span class="s0">in </span><span class="s1">tweet_iterator: 
+            date_created = tweet[</span><span class="s5">'date_tweeted'</span><span class="s1">] 
+            user = tweet[</span><span class="s5">'user'</span><span class="s1">][</span><span class="s5">'name'</span><span class="s1">].encode(</span><span class="s5">'ascii'</span><span class="s2">, </span><span class="s5">'ignore'</span><span class="s1">).decode(</span><span class="s5">'ascii'</span><span class="s1">) 
+            text = tweet[</span><span class="s5">'text'</span><span class="s1">].encode(</span><span class="s5">'ascii'</span><span class="s2">, </span><span class="s5">'ignore'</span><span class="s1">).decode(</span><span class="s5">'ascii'</span><span class="s1">) 
+            userlocation = tweet[</span><span class="s5">'user'</span><span class="s1">][</span><span class="s5">'location'</span><span class="s1">].encode(</span><span class="s5">'ascii'</span><span class="s2">, </span><span class="s5">'ignore'</span><span class="s1">).decode(</span><span class="s5">'ascii'</span><span class="s1">) 
+            tweetLatitude = tweet[</span><span class="s5">'coordinates'</span><span class="s1">][</span><span class="s5">'coordinates'</span><span class="s1">][</span><span class="s4">1</span><span class="s1">] 
+            tweetLongitude = tweet[</span><span class="s5">'coordinates'</span><span class="s1">][</span><span class="s5">'coordinates'</span><span class="s1">][</span><span class="s4">0</span><span class="s1">] 
+            g = geocoder.google(userlocation) 
+            </span><span class="s0">if </span><span class="s1">len(g.latlng) != </span><span class="s4">0</span><span class="s1">: 
+                userLatitude = g.latlng[</span><span class="s5">'lat'</span><span class="s1">] 
+                userLongitude = g.latlng[</span><span class="s5">'lng'</span><span class="s1">] 
+                differenceOfLocation = euclidean_distance(userLatitude</span><span class="s2">, </span><span class="s1">tweetLatitude</span><span class="s2">, </span><span class="s1">userLongitude</span><span class="s2">, </span><span class="s1">tweetLongitude) 
+            </span><span class="s0">else</span><span class="s1">: 
+                userLatitude = </span><span class="s4">0</span><span class="s1"> 
+                userLongitude = </span><span class="s4">0</span><span class="s1"> 
+                differenceOfLocation = euclidean_distance(userLatitude</span><span class="s2">, </span><span class="s1">tweetLatitude</span><span class="s2">, </span><span class="s1">userLongitude</span><span class="s2">, </span><span class="s1">tweetLongitude) 
+ 
+            my_file_writer.writerow([tweetLatitude</span><span class="s2">, </span><span class="s1">tweetLongitude</span><span class="s2">, </span><span class="s1">userLatitude</span><span class="s2">, </span><span class="s1">userLongitude</span><span class="s2">, </span><span class="s1">differenceOfLocation</span><span class="s2">, </span><span class="s1">user]) 
+ 
+ 
+ 
+ 
+ 
+load_from_mongo(</span><span class="s5">'geoWorldStreamDatabase'</span><span class="s2">, </span><span class="s5">'geolocated'</span><span class="s1">) 
+ 
+ 
+ 
+ 
+</span></pre>
+</body>
+</html>

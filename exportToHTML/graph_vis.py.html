@@ -1,0 +1,120 @@
+<html>
+<head>
+<title>graph_vis.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: rgb(0,0,0); font-weight: normal; font-style: normal; }
+.s0 { color: rgb(204,120,50); font-weight: bold; }
+.s1 { color: rgb(169,183,198); }
+.s2 { color: rgb(204,120,50); }
+.s3 { color: rgb(128,128,128); }
+.s4 { color: rgb(165,194,97); }
+.s5 { color: rgb(104,151,187); }
+</style>
+</head>
+<BODY BGCOLOR="#2b2b2b">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#C0C0C0" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+graph_vis.py</FONT>
+</center></TD></TR></TABLE>
+<pre>
+
+<span class="s0">import </span><span class="s1">json 
+</span><span class="s0">import </span><span class="s1">pymongo 
+</span><span class="s0">import </span><span class="s1">pandas </span><span class="s0">as </span><span class="s1">pd 
+</span><span class="s0">from </span><span class="s1">time </span><span class="s0">import </span><span class="s1">gmtime</span><span class="s2">, </span><span class="s1">mktime</span><span class="s2">, </span><span class="s1">strptime 
+</span><span class="s0">import </span><span class="s1">networkx </span><span class="s0">as </span><span class="s1">nx 
+ 
+ 
+ 
+</span><span class="s0">def </span><span class="s1">load_from_mongo(mongo_db</span><span class="s2">, </span><span class="s1">mongo_db_coll</span><span class="s2">, </span><span class="s1">return_cursor=False</span><span class="s2">, </span><span class="s1">criteria=None</span><span class="s2">, </span><span class="s1">projection=None</span><span class="s2">, </span><span class="s1">**mongo_conn_kw): 
+ 
+    </span><span class="s3"># Can use critera and projection to limit the data that is returned</span><span class="s1"> 
+    </span><span class="s3"># look at http://docs.mongodb.org/manual/reference/method/db.collection.find/</span><span class="s1"> 
+ 
+    </span><span class="s3"># Can use MongoDB's aggregations framework for more detailed queries</span><span class="s1"> 
+ 
+    client = pymongo.MongoClient(**mongo_conn_kw) 
+    db = client[mongo_db] 
+    coll = db[mongo_db_coll] 
+ 
+    tweet_iterator = coll.find() 
+ 
+ 
+    tweets_data = [] 
+    now = mktime(gmtime()) 
+    </span><span class="s0">for </span><span class="s1">tweet </span><span class="s0">in </span><span class="s1">tweet_iterator: 
+ 
+        author = </span><span class="s4">&quot;&quot;</span><span class="s1"> 
+        rtauthor = </span><span class="s4">&quot;&quot;</span><span class="s1"> 
+        age = rtage = followers = rtfollowers = </span><span class="s5">0</span><span class="s1"> 
+ 
+ 
+        </span><span class="s0">try</span><span class="s1">: 
+            author = tweet[</span><span class="s4">'user'</span><span class="s1">][</span><span class="s4">'screen_name'</span><span class="s1">] 
+            rtauthor = tweet[</span><span class="s4">'retweeted_status'</span><span class="s1">][</span><span class="s4">'user'</span><span class="s1">][</span><span class="s4">'screen_name'</span><span class="s1">] 
+            rtage = int(now - mktime(strptime(tweet[</span><span class="s4">'retweeted_status'</span><span class="s1">][</span><span class="s4">'user'</span><span class="s1">][</span><span class="s4">'created_at'</span><span class="s1">]</span><span class="s2">, </span><span class="s4">&quot;%a %b %d %H:%M:%S +0000 %Y&quot;</span><span class="s1">)) / (</span><span class="s5">60 </span><span class="s1">* </span><span class="s5">60 </span><span class="s1">* </span><span class="s5">24</span><span class="s1">)) 
+            rtfollowers = tweet[</span><span class="s4">'retweeted_status'</span><span class="s1">][</span><span class="s4">'user'</span><span class="s1">][</span><span class="s4">'followers_count'</span><span class="s1">] 
+        </span><span class="s0">except</span><span class="s1">: 
+            </span><span class="s0">try</span><span class="s1">: 
+                author = tweet[</span><span class="s4">'user'</span><span class="s1">][</span><span class="s4">'screen_name'</span><span class="s1">] 
+            </span><span class="s0">except</span><span class="s1">: 
+                </span><span class="s0">continue</span><span class="s1"> 
+ 
+        reply_to = </span><span class="s4">&quot;&quot;</span><span class="s1"> 
+        </span><span class="s0">if </span><span class="s1">tweet[</span><span class="s4">'in_reply_to_screen_name'</span><span class="s1">] != </span><span class="s4">'null'</span><span class="s1">: 
+            reply_to = tweet[</span><span class="s4">'in_reply_to_screen_name'</span><span class="s1">] 
+ 
+        age = int(now - mktime(strptime(tweet[</span><span class="s4">'user'</span><span class="s1">][</span><span class="s4">'account_created'</span><span class="s1">]</span><span class="s2">, </span><span class="s4">&quot;%a %b %d %H:%M:%S +0000 %Y&quot;</span><span class="s1">)) / (</span><span class="s5">60 </span><span class="s1">* </span><span class="s5">60 </span><span class="s1">* </span><span class="s5">24</span><span class="s1">)) 
+ 
+        followers = tweet[</span><span class="s4">'user'</span><span class="s1">][</span><span class="s4">'followers_count'</span><span class="s1">] 
+        text = tweet[</span><span class="s4">'text'</span><span class="s1">] 
+        dict1 = {} 
+ 
+        dict1.update({</span><span class="s4">'author'</span><span class="s1">: author</span><span class="s2">, </span><span class="s4">'reply_to'</span><span class="s1">: reply_to</span><span class="s2">, </span><span class="s4">'age'</span><span class="s1">: age</span><span class="s2">, </span><span class="s4">'followers'</span><span class="s1">: followers</span><span class="s2">, </span><span class="s4">'retweet_of'</span><span class="s1">: rtauthor</span><span class="s2">, </span><span class="s4">'rtfollowers'</span><span class="s1">: rtfollowers</span><span class="s2">, </span><span class="s4">'rtage'</span><span class="s1">: rtage</span><span class="s2">, </span><span class="s4">'text'</span><span class="s1">: text}) 
+        tweets_data.append(dict1) 
+ 
+    tweets = pd.DataFrame(tweets_data) 
+ 
+ 
+    </span><span class="s0">return </span><span class="s1">tweets 
+ 
+ 
+ 
+loaded_tweets = load_from_mongo(</span><span class="s4">'geoWorldGraphVisDatabase'</span><span class="s2">, </span><span class="s4">'tweets'</span><span class="s1">) 
+ 
+J = nx.DiGraph() 
+ 
+</span><span class="s0">for </span><span class="s1">index</span><span class="s2">, </span><span class="s1">row </span><span class="s0">in </span><span class="s1">loaded_tweets.iterrows(): 
+ 
+    this_user_id = row[</span><span class="s4">'author'</span><span class="s1">] 
+    author = row[</span><span class="s4">'reply_to'</span><span class="s1">] 
+    followers = row[</span><span class="s4">'followers'</span><span class="s1">] 
+    age = row[</span><span class="s4">'age'</span><span class="s1">] 
+    rtfollowers = row[</span><span class="s4">'rtfollowers'</span><span class="s1">] 
+    rtage = row[</span><span class="s4">'rtage'</span><span class="s1">] 
+ 
+    </span><span class="s0">if not </span><span class="s1">this_user_id </span><span class="s0">in </span><span class="s1">J: 
+        J.add_node(this_user_id</span><span class="s2">, </span><span class="s1">attr_dict={ 
+            </span><span class="s4">'followers'</span><span class="s1">: row[</span><span class="s4">'followers'</span><span class="s1">]</span><span class="s2">,</span><span class="s1"> 
+            </span><span class="s4">'age'</span><span class="s1">: row[</span><span class="s4">'age'</span><span class="s1">]</span><span class="s2">,</span><span class="s1"> 
+        }) 
+ 
+    </span><span class="s0">if </span><span class="s1">author != </span><span class="s4">&quot;&quot; </span><span class="s0">and not </span><span class="s1">author </span><span class="s0">in </span><span class="s1">J: 
+        J.add_node(author</span><span class="s2">, </span><span class="s1">attr_dict={ 
+            </span><span class="s4">'followers'</span><span class="s1">: row[</span><span class="s4">'rtfollowers'</span><span class="s1">]</span><span class="s2">,</span><span class="s1"> 
+            </span><span class="s4">'age'</span><span class="s1">: row[</span><span class="s4">'rtage'</span><span class="s1">]</span><span class="s2">,</span><span class="s1"> 
+        }) 
+ 
+    </span><span class="s0">if </span><span class="s1">author != </span><span class="s4">&quot;&quot;</span><span class="s1">: 
+        </span><span class="s0">if </span><span class="s1">J.has_edge(author</span><span class="s2">, </span><span class="s1">this_user_id): 
+            J[author][this_user_id][</span><span class="s4">'weight'</span><span class="s1">] += </span><span class="s5">1</span><span class="s1"> 
+        </span><span class="s0">else</span><span class="s1">: 
+            J.add_weighted_edges_from([author</span><span class="s2">, </span><span class="s1">this_user_id</span><span class="s2">, </span><span class="s5">1.0</span><span class="s1">]) 
+ 
+ 
+ 
+nx.write_gexf(J</span><span class="s2">, </span><span class="s4">'ggrtages.gexf'</span><span class="s1">)</span></pre>
+</body>
+</html>

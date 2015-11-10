@@ -138,7 +138,7 @@ client = pymongo.MongoClient()
 twitter_api = oauth_login()
 
 # Create query
-q = 'ebola'
+q = 'tornado'
 # qtest = 'israel'
 
 # Create response
@@ -192,9 +192,9 @@ for response in responses:
         tweet['geo'] = response.get('geo', default)
         tweet['place'] = response.get('place', default)
         # print json.dumps(tweet, indent=1)
-        save_to_mongo(tweet, 'ebolaSearchDatabase', 'geolocated')
+        save_to_mongo(tweet, 'tornadoSearchDatabase', 'geolocated')
         # print "bob"
     else:
         # print json.dumps(tweet, indent=1)
-        save_to_mongo(tweet, 'ebolaSearchDatabase', 'tweets')
+        save_to_mongo(tweet, 'tornadoSearchDatabase', 'tweets')
         # print "bob"

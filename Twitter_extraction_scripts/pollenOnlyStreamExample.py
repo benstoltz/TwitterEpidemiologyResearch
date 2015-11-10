@@ -101,7 +101,7 @@ def save_to_mongo(data, mongo_db, mongo_db_collection):
 client = pymongo.MongoClient()
 
 # define world bounding box
-query = 'pollen,polen,pollon,pollan,pollin'
+query = 'football,college football,nfl,panthers,tar heels,duke'
 
 
 twitterAccess = oauth_login()
@@ -151,9 +151,9 @@ for response in stream:
                 tweet['geo'] = response.get('geo', default)
                 tweet['coordinates'] = response.get('coordinates', default)
                 tweet['place'] = response.get('place', default)
-                save_to_mongo(tweet, 'pollenOnlyStreamDatabase', 'geolocated')
+                save_to_mongo(tweet, 'footballStreamDatabase', 'geolocated')
             else:
-                save_to_mongo(tweet, 'pollenOnlyStreamDatabase', 'tweets')
+                save_to_mongo(tweet, 'footballStreamDatabase', 'tweets')
         except KeyError:
             pass
 
